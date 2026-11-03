@@ -1,0 +1,41 @@
+{
+  "name": "mailist-backend",
+  "version": "1.0.0",
+  "description": "An Email triage AI agent",
+  "keywords": [],
+  "homepage": "https://github.com/YoYo178/mailist#readme",
+  "bugs": {
+    "url": "https://github.com/YoYo178/mailist/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoYo178/mailist.git"
+  },
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc && tsc-alias",
+    "dev": "tsx --env-file=secrets/.env --env-file-if-exists=secrets/.env.development --watch src/index.ts",
+    "start": "node --env-file=secrets/.env --env-file-if-exists=secrets/.env.production build/index.js",
+
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "tsc-alias": "^1.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "7.1.0-beta"
+  },
+  "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1"
+}

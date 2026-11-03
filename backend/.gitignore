@@ -1,0 +1,8 @@
+# Build files
+build
+
+# ENV files inside secrets folder
+secrets/*.env
+
+# Include .env.example
+!secrets/.env.example
