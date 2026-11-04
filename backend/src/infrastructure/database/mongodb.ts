@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import env from "./env.js";
+import env from "../../env.js";
 
 const environment = env.NODE_ENV;
 const logHeader = `[MongoDB:${environment}] `;
