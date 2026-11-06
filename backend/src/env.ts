@@ -11,6 +11,8 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1),
 
   REDIS_URL: z.url().default('redis://localhost:6379'),
+
+  SESSION_SECRET: z.string().min(32),
 });
 
 export default envSchema.parse(process.env);
