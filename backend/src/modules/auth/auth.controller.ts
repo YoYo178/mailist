@@ -2,6 +2,7 @@ import env from '@/env.js';
 import type { TApiResponse } from '@/lib/api.lib.js';
 import type { Request, Response } from 'express';
 import { UserSerializer } from '../users/user.serializer.js';
+import { UnauthorizedUserError } from './auth.errors.js';
 import { loginSchema, registerSchema } from './auth.schema.js';
 import type { AuthService } from './auth.service.js';
 
@@ -70,8 +71,10 @@ export class AuthController {
     };
   }
   getMe(req: Request): TApiResponse {
+    if (!req.user) throw UnauthorizedUserError();
+
     return {
-      data: req.user,
+      data: UserSerializer.serialize(req.user),
       message: 'Fetched data succesfully',
       statusCode: 200,
       success: true,
