@@ -1,5 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
+const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308] as const;
+
 // API Error
 interface IApiErrorParams<T> {
   statusCode: number;
@@ -32,12 +34,20 @@ export class ApiError<T = null> extends Error {
 }
 
 // API Response
-function isNoContentResponse(result: TApiResponse): result is IApiNoContentResponse {
-  return result.statusCode === 204;
+
+interface IApiRedirectReponse {
+  statusCode: (typeof REDIRECT_STATUS_CODES)[number];
+  targetUrl: string;
+}
+function isRedirectResponse(result: TApiResponse): result is IApiRedirectReponse {
+  return new Set<number>(REDIRECT_STATUS_CODES).has(result.statusCode);
 }
 
 interface IApiNoContentResponse {
   statusCode: 204;
+}
+function isNoContentResponse(result: TApiResponse): result is IApiNoContentResponse {
+  return result.statusCode === 204;
 }
 
 interface IApiSuccessResponse<T> {
@@ -58,7 +68,8 @@ interface IApiFailResponse<T> {
 export type TApiResponse<T = unknown> =
   | IApiSuccessResponse<T>
   | IApiFailResponse<T>
-  | IApiNoContentResponse;
+  | IApiNoContentResponse
+  | IApiRedirectReponse;
 
 type ControllerFn = (...args: Parameters<RequestHandler>) => TApiResponse | Promise<TApiResponse>;
 export function routeWrapper(handlerFn: ControllerFn) {
@@ -67,6 +78,11 @@ export function routeWrapper(handlerFn: ControllerFn) {
 
     if (isNoContentResponse(result)) {
       res.status(204).end();
+      return;
+    }
+
+    if (isRedirectResponse(result)) {
+      res.redirect(result.statusCode, result.targetUrl);
       return;
     }
 
