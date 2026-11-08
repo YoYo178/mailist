@@ -8,7 +8,9 @@ export class UserService {
 
   private bindMethods() {
     this.createUser = this.createUser.bind(this);
+    this.getUserById = this.getUserById.bind(this);
     this.getUserByEmail = this.getUserByEmail.bind(this);
+    this.getUserByEmailWithPassword = this.getUserByEmailWithPassword.bind(this);
   }
 
   async createUser(data: TInputUser) {

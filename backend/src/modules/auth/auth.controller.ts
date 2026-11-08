@@ -30,6 +30,7 @@ export class AuthController {
       success: true,
     };
   }
+
   async login(req: Request): Promise<TApiResponse> {
     const validatedBody = loginSchema.parse(req.body);
 
@@ -51,6 +52,7 @@ export class AuthController {
       success: true,
     };
   }
+
   async logout(req: Request, res: Response): Promise<TApiResponse> {
     await new Promise<void>((resolve, reject) => {
       req.session.destroy((error) => {
@@ -70,6 +72,7 @@ export class AuthController {
       statusCode: 204,
     };
   }
+
   getMe(req: Request): TApiResponse {
     if (!req.user) throw UnauthorizedUserError();
 
