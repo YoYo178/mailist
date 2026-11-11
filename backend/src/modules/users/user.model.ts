@@ -1,3 +1,4 @@
+import type { TMongoFields } from '@/types/mongodb.types.js';
 import mongoose, { Types } from 'mongoose';
 
 interface IUser {
@@ -9,7 +10,7 @@ interface IUser {
   updatedAt: string;
 }
 
-type TInputUser = Omit<IUser, '_id' | 'createdAt' | 'updatedAt'>;
+type TInputUser = Omit<IUser, TMongoFields>;
 
 const userSchema = new mongoose.Schema<IUser>(
   {

@@ -13,6 +13,12 @@ const envSchema = z.object({
   REDIS_URL: z.url().default('redis://localhost:6379'),
 
   SESSION_SECRET: z.string().min(32),
+
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_REDIRECT_URI: z.string().min(1),
+
+  GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1),
 });
 
 export default envSchema.parse(process.env);
