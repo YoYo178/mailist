@@ -45,4 +45,27 @@ export class GmailService {
       scopes: tokens.scope?.split(' ') ?? [],
     });
   }
+
+  async refreshAccessToken(accountId: string): Promise<string> {
+    const account = await this.gmailRepository.findByIdWithTokens(accountId);
+
+    if (!account?.refreshToken) throw Error(); // TODO
+
+    const refreshToken = this.tokenEncryptionService.decrypt(account.refreshToken);
+
+    const tokens = await this.gmailOAuthService.refreshAccessToken(refreshToken);
+
+    if (!tokens.access_token) throw InvalidGoogleAccountError();
+
+    const accessToken = this.tokenEncryptionService.encrypt(tokens.access_token);
+
+    await this.gmailRepository.updateTokens(accountId, {
+      accessToken,
+      ...(tokens.expiry_date && {
+        expiresAt: new Date(tokens.expiry_date),
+      }),
+    });
+
+    return tokens.access_token;
+  }
 }

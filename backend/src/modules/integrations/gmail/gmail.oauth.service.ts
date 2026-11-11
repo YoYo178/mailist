@@ -1,4 +1,5 @@
 import env from '@/env.js';
+import { createGoogleOauth2Client } from '@/infrastructure/google/oauth.client.js';
 import type { Auth } from 'googleapis';
 import { InvalidGoogleAccountError, UnverifiedGoogleAccountError } from './gmail.errors.js';
 
@@ -40,5 +41,17 @@ export class GmailOauthService {
       name: payload.name,
       picture: payload.picture,
     };
+  }
+
+  async refreshAccessToken(refreshToken: string) {
+    const oauth2Client = createGoogleOauth2Client();
+
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken,
+    });
+
+    const { credentials } = await oauth2Client.refreshAccessToken();
+
+    return credentials;
   }
 }
