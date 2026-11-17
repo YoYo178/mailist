@@ -6,6 +6,7 @@ import { GmailService } from '@/modules/integrations/gmail/gmail.service.js';
 import { UserService } from '@/modules/users/user.service.js';
 import { gmailRepository, userRepository } from './repositories.js';
 import { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
+import { gmailClient } from './clients.js';
 
 export const userService = new UserService(userRepository);
 
@@ -20,4 +21,5 @@ export const gmailService = new GmailService(
   gmailOauthStateService,
   gmailRepository,
   tokenEncryptionService,
+  gmailClient,
 );

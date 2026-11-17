@@ -43,6 +43,12 @@ export class GmailRepository {
     return ConnectedAccount.findById(id).select('+accessToken +refreshToken').exec();
   }
 
+  async findByUserIdWithTokens(userId: string) {
+    return ConnectedAccount.findOne({ userId, provider: 'google' })
+      .select('+accessToken +refreshToken')
+      .exec();
+  }
+
   async updateTokens(
     id: string,
     data: {

@@ -1,5 +1,6 @@
 import type { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
 import mongoose from 'mongoose';
+import type { GmailClient } from './gmail.client.js';
 import {
   GmailAccountNotFoundError,
   GmailReauthorizationRequiredError,
@@ -31,7 +32,8 @@ export class GmailService {
     private gmailOauthStateService: GmailOauthStateService,
     private gmailRepository: GmailRepository,
     private tokenEncryptionService: TokenEncryptionService,
-  ) { }
+    private gmailClient: GmailClient,
+  ) {}
 
   async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
     const state = await this.gmailOauthStateService.create(userId, sessionId);
@@ -111,5 +113,17 @@ export class GmailService {
     }
 
     return this.refreshAccessToken(accountId); // TODO: look into the 2nd re-fetch of the same account
+  }
+
+  async getProfile(userId: string) {
+    const account = await this.gmailRepository.findByUserIdWithTokens(userId);
+
+    if (!account) throw GmailAccountNotFoundError();
+
+    const accessToken = await this.getValidAccessToken(account._id.toString());
+
+    await this.gmailClient.listMessages(accessToken);
+
+    return this.gmailClient.getProfile(accessToken);
   }
 }
