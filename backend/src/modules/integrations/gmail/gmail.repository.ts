@@ -59,6 +59,9 @@ export class GmailRepository {
             expiresAt: data.expiresAt,
           }),
         },
+        ...(!data.expiresAt && {
+          $unset: { expiresAt: 1 },
+        }),
       },
       { runValidators: true },
     );
