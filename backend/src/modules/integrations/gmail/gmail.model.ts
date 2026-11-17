@@ -45,10 +45,7 @@ const connectedAccountSchema = new mongoose.Schema<IConnectedAccount>(
   { timestamps: true },
 );
 
-connectedAccountSchema.index(
-  { userId: 1, provider: 1 },
-  { unique: true },
-);
+connectedAccountSchema.index({ userId: 1, provider: 1 }, { unique: true });
 
 const ConnectedAccount = mongoose.model<IConnectedAccount>(
   'ConnectedAccount',

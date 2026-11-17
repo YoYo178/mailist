@@ -18,9 +18,12 @@ export class GmailController {
   }
 
   async connect(req: Request): Promise<TApiResponse> {
-    if (!req.user?._id) throw UnauthorizedUserError();
+    if (!req.user?._id || !req.sessionID) throw UnauthorizedUserError();
 
-    const targetUrl = await this.gmailService.getAuthorizationUrl(req.user._id.toString());
+    const targetUrl = await this.gmailService.getAuthorizationUrl(
+      req.user._id.toString(),
+      req.sessionID,
+    );
 
     return {
       statusCode: 302,
@@ -29,11 +32,12 @@ export class GmailController {
   }
 
   async callback(req: Request): Promise<TApiResponse> {
+    // TODO: Handle denial separately as it may not offer a code on a denied/rejected flow
     const { code, state, error } = callbackSuccessSchema.parse(req.query);
 
     if (error) throw GoogleAuthDeniedError();
 
-    await this.gmailService.connectAccount(code, state);
+    await this.gmailService.connectAccount(code, state, req.sessionID);
 
     return {
       data: null,

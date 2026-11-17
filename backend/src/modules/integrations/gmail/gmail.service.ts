@@ -1,6 +1,12 @@
 import type { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
 import mongoose from 'mongoose';
-import { GmailAccountNotFoundError, GmailReauthorizationRequiredError, GmailTokenRefreshFailedError, InvalidGoogleAccountError, InvalidOrExpiredState } from './gmail.errors.js';
+import {
+  GmailAccountNotFoundError,
+  GmailReauthorizationRequiredError,
+  GmailTokenRefreshFailedError,
+  InvalidGoogleAccountError,
+  InvalidOrExpiredState,
+} from './gmail.errors.js';
 import type { GmailOauthStateService } from './gmail.oauth-state.service.js';
 import type { GmailOauthService } from './gmail.oauth.service.js';
 import type { GmailRepository } from './gmail.repository.js';
@@ -27,16 +33,16 @@ export class GmailService {
     private tokenEncryptionService: TokenEncryptionService,
   ) { }
 
-  async getAuthorizationUrl(userId: string): Promise<string> {
-    const state = await this.gmailOauthStateService.create(userId);
+  async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
+    const state = await this.gmailOauthStateService.create(userId, sessionId);
 
     return this.gmailOAuthService.getAuthorizationUrl(state);
   }
 
-  async connectAccount(code: string, state: string) {
-    const userId = await this.gmailOauthStateService.consume(state);
+  async connectAccount(code: string, state: string, sessionId: string) {
+    const oauthState = await this.gmailOauthStateService.consume(state);
 
-    if (!userId) throw InvalidOrExpiredState();
+    if (!oauthState || oauthState.sessionId !== sessionId) throw InvalidOrExpiredState();
 
     const tokens = await this.gmailOAuthService.exchangeCode(code);
 
@@ -45,7 +51,7 @@ export class GmailService {
     const identity = await this.gmailOAuthService.getAccountIdentity(tokens.id_token);
 
     await this.gmailRepository.upsert({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId: new mongoose.Types.ObjectId(oauthState.userId),
       provider: 'google',
       providerAccountId: identity.providerAccountId,
       email: identity.email,
@@ -100,7 +106,7 @@ export class GmailService {
 
     const expiresAt = account.expiresAt?.getTime();
 
-    if (expiresAt && expiresAt > Date.now() + (60 * 1000)) {
+    if (expiresAt && expiresAt > Date.now() + 60 * 1000) {
       return this.tokenEncryptionService.decrypt(account.accessToken);
     }
 
