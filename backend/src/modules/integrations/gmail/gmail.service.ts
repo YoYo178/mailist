@@ -92,4 +92,18 @@ export class GmailService {
 
     return tokens.access_token;
   }
+
+  async getValidAccessToken(accountId: string): Promise<string> {
+    const account = await this.gmailRepository.findByIdWithTokens(accountId);
+
+    if (!account) throw GmailAccountNotFoundError();
+
+    const expiresAt = account.expiresAt?.getTime();
+
+    if (expiresAt && expiresAt > Date.now() + (60 * 1000)) {
+      return this.tokenEncryptionService.decrypt(account.accessToken);
+    }
+
+    return this.refreshAccessToken(accountId); // TODO: look into the 2nd re-fetch of the same account
+  }
 }
