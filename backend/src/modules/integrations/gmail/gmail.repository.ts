@@ -11,7 +11,6 @@ export class GmailRepository {
     const identifiers = {
       userId: data.userId,
       provider: data.provider,
-      providerAccountId: data.providerAccountId,
     };
 
     const $set = {
