@@ -1,24 +1,19 @@
 import { ApiError } from '@/lib/api.lib.js';
 
-export const UnauthorizedUserError = (
-  message: string = 'User is not authorized to perform this action',
-) =>
+export const UnauthorizedUserError = (message?: string) =>
   new ApiError({
     statusCode: 401, // Unauthorized
-    message,
-    data: null,
+    message: message ?? 'User is not authorized to perform this action',
   });
 
-export const InvalidLoginError = (message: string = 'Invalid login credentials') =>
+export const InvalidLoginError = (message?: string) =>
   new ApiError({
     statusCode: 401, // Unauthorized
-    message,
-    data: null,
+    message: message ?? 'Invalid login credentials',
   });
 
-export const UserExistsError = (message: string = 'An user already exists with this email') =>
+export const UserExistsError = (message?: string) =>
   new ApiError({
     statusCode: 409, // Conflict
-    message,
-    data: null,
+    message: message ?? 'An user already exists with this email',
   });

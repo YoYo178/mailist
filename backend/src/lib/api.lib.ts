@@ -6,20 +6,20 @@ const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308] as const;
 interface IApiErrorParams<T> {
   statusCode: number;
   message: string;
-  data: T;
+  data?: T | null;
   errors?: Record<string, unknown>;
 }
 
 export class ApiError<T = null> extends Error {
   public statusCode: number;
-  public data: T;
+  public data: T | null;
   public success: boolean;
   public errors: Record<string, unknown>;
 
   constructor({
     statusCode,
     message = 'Something went wrong',
-    data,
+    data = null,
     errors = {},
   }: IApiErrorParams<T>) {
     super(message);
