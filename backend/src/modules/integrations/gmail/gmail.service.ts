@@ -1,9 +1,23 @@
 import type { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
 import mongoose from 'mongoose';
-import { InvalidGoogleAccountError, InvalidOrExpiredState } from './gmail.errors.js';
+import { GmailAccountNotFoundError, GmailReauthorizationRequiredError, GmailTokenRefreshFailedError, InvalidGoogleAccountError, InvalidOrExpiredState } from './gmail.errors.js';
 import type { GmailOauthStateService } from './gmail.oauth-state.service.js';
 import type { GmailOauthService } from './gmail.oauth.service.js';
 import type { GmailRepository } from './gmail.repository.js';
+
+function isInvalidGrantError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+
+  const response = 'response' in error ? error.response : undefined;
+
+  if (!response || typeof response !== 'object') return false;
+
+  const data = 'data' in response ? response.data : undefined;
+
+  if (!data || typeof data !== 'object') return false;
+
+  return 'error' in data && data.error === 'invalid_grant';
+}
 
 export class GmailService {
   constructor(
@@ -11,7 +25,7 @@ export class GmailService {
     private gmailOauthStateService: GmailOauthStateService,
     private gmailRepository: GmailRepository,
     private tokenEncryptionService: TokenEncryptionService,
-  ) {}
+  ) { }
 
   async getAuthorizationUrl(userId: string): Promise<string> {
     const state = await this.gmailOauthStateService.create(userId);
@@ -49,13 +63,23 @@ export class GmailService {
   async refreshAccessToken(accountId: string): Promise<string> {
     const account = await this.gmailRepository.findByIdWithTokens(accountId);
 
-    if (!account?.refreshToken) throw Error(); // TODO
+    if (!account) throw GmailAccountNotFoundError();
+
+    if (!account.refreshToken) throw GmailReauthorizationRequiredError();
 
     const refreshToken = this.tokenEncryptionService.decrypt(account.refreshToken);
 
-    const tokens = await this.gmailOAuthService.refreshAccessToken(refreshToken);
+    const tokens = await this.gmailOAuthService
+      .refreshAccessToken(refreshToken)
+      .catch((error: unknown) => {
+        if (isInvalidGrantError(error)) {
+          throw GmailReauthorizationRequiredError();
+        }
 
-    if (!tokens.access_token) throw InvalidGoogleAccountError();
+        throw GmailTokenRefreshFailedError();
+      });
+
+    if (!tokens.access_token) throw GmailTokenRefreshFailedError();
 
     const accessToken = this.tokenEncryptionService.encrypt(tokens.access_token);
 
