@@ -1,6 +1,8 @@
 import { ApiError } from '@/lib/api.lib.js';
 
-export const GoogleAuthDeniedError = (message: string = 'Google authorization was denied.') =>
+export const GoogleAuthDeniedError = (
+  message = 'Google authorization was denied.',
+) =>
   new ApiError({
     data: null,
     message,
@@ -8,7 +10,7 @@ export const GoogleAuthDeniedError = (message: string = 'Google authorization wa
   });
 
 export const InvalidOrExpiredState = (
-  message: string = 'Invalid or expired OAuth state, please try logging in againē',
+  message = 'Invalid or expired OAuth state. Please try connecting again.',
 ) =>
   new ApiError({
     data: null,
@@ -17,7 +19,7 @@ export const InvalidOrExpiredState = (
   });
 
 export const InvalidGoogleAccountError = (
-  message: string = 'Invalid google account, please try again with a different account.',
+  message = 'Unable to verify the Google account.',
 ) =>
   new ApiError({
     data: null,
@@ -26,10 +28,37 @@ export const InvalidGoogleAccountError = (
   });
 
 export const UnverifiedGoogleAccountError = (
-  message: string = 'Your google account is not verified, please verify your account and try again.',
+  message = 'Your Google account email is not verified.',
 ) =>
   new ApiError({
     data: null,
     message,
-    statusCode: 401,
+    statusCode: 403,
+  });
+
+export const GmailAccountNotFoundError = (
+  message = 'Connected Gmail account not found.',
+) =>
+  new ApiError({
+    data: null,
+    message,
+    statusCode: 404,
+  });
+
+export const GmailReauthorizationRequiredError = (
+  message = 'Gmail authorization has expired. Please reconnect your account.',
+) =>
+  new ApiError({
+    data: null,
+    message,
+    statusCode: 409,
+  });
+
+export const GmailTokenRefreshFailedError = (
+  message = 'Unable to refresh Gmail credentials. Please try again.',
+) =>
+  new ApiError({
+    data: null,
+    message,
+    statusCode: 502,
   });
