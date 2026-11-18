@@ -8,9 +8,7 @@ const router: Router = Router();
 router.post('/login', routeWrapper(authController.login));
 router.post('/register', routeWrapper(authController.register));
 
-router.use(authMiddleware.authenticate);
-
-router.post('/logout', routeWrapper(authController.logout));
-router.get('/me', routeWrapper(authController.getMe));
+router.post('/logout', authMiddleware.authenticate, routeWrapper(authController.logout));
+router.get('/me', authMiddleware.authenticate, routeWrapper(authController.getMe));
 
 export default router;
