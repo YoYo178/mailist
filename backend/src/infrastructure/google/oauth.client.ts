@@ -1,6 +1,10 @@
 import env from '@/env.js';
 import { Auth, google } from 'googleapis';
 
+google.options({
+  http2: true,
+});
+
 export const createGoogleOauth2Client = (): Auth.OAuth2Client =>
   new google.auth.OAuth2({
     clientId: env.GOOGLE_CLIENT_ID,
