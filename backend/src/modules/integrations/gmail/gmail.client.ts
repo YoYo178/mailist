@@ -1,7 +1,7 @@
 import { type gmail_v1, google } from 'googleapis';
 
 export class GmailClient {
-  private async getClient(accessToken: string) {
+  private getClient(accessToken: string) {
     const auth = new google.auth.OAuth2();
 
     auth.setCredentials({
@@ -17,7 +17,7 @@ export class GmailClient {
   }
 
   async getProfile(accessToken: string): Promise<gmail_v1.Schema$Profile> {
-    const gmail = await this.getClient(accessToken);
+    const gmail = this.getClient(accessToken);
 
     const { data } = await gmail.users.getProfile({
       userId: 'me',
@@ -26,11 +26,21 @@ export class GmailClient {
     return data;
   }
 
-  async listMessages(accessToken: string): Promise<gmail_v1.Schema$ListMessagesResponse> {
-    const gmail = await this.getClient(accessToken);
+  async listMessages(
+    accessToken: string,
+    options?: {
+      maxResults?: number;
+      pageToken?: string;
+      query?: string;
+    },
+  ): Promise<gmail_v1.Schema$ListMessagesResponse> {
+    const gmail = this.getClient(accessToken);
 
     const { data } = await gmail.users.messages.list({
       userId: 'me',
+      maxResults: options?.maxResults ?? 50,
+      pageToken: options?.pageToken ?? '',
+      q: options?.query ?? '',
     });
 
     return data;
