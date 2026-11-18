@@ -35,4 +35,18 @@ export class GmailClient {
 
     return data;
   }
+
+  async getMessages(accessToken: string, messageIds: string[]): Promise<gmail_v1.Schema$Message[]> {
+    const gmail = this.getClient(accessToken);
+    return Promise.all(
+      messageIds.map(async (id) => {
+        const { data } = await gmail.users.messages.get({
+          userId: 'me',
+          id,
+        });
+
+        return data;
+      }),
+    );
+  }
 }
