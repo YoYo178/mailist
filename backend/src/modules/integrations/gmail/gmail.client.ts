@@ -53,6 +53,7 @@ export class GmailClient {
         const { data } = await gmail.users.messages.get({
           userId: 'me',
           id,
+          format: 'full',
         });
 
         return data;

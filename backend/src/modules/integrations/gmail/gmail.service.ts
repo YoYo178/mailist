@@ -1,4 +1,6 @@
 import type { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
+import type { EmailService } from '@/modules/emails/email.service.js';
+import type { Queue } from 'bullmq';
 import mongoose from 'mongoose';
 import type { GmailClient } from './gmail.client.js';
 import {
@@ -10,7 +12,9 @@ import {
 } from './gmail.errors.js';
 import type { GmailOauthStateService } from './gmail.oauth-state.service.js';
 import type { GmailOauthService } from './gmail.oauth.service.js';
+import type { GmailParser } from './gmail.parser.js';
 import type { GmailRepository } from './gmail.repository.js';
+import type { GmailSyncJobData, GmailSyncJobResult } from './gmail.types.js';
 
 function isInvalidGrantError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
@@ -33,6 +37,10 @@ export class GmailService {
     private gmailRepository: GmailRepository,
     private tokenEncryptionService: TokenEncryptionService,
     private gmailClient: GmailClient,
+    private gmailParser: GmailParser,
+    private emailService: EmailService,
+
+    private emailSyncQueue: Queue<GmailSyncJobData, GmailSyncJobResult>,
   ) {}
 
   async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
@@ -66,6 +74,8 @@ export class GmailService {
       }),
       scopes: tokens.scope?.split(' ') ?? [],
     });
+
+    await this.enqueueSync(oauthState.userId);
   }
 
   async refreshAccessToken(accountId: string): Promise<string> {
@@ -123,5 +133,36 @@ export class GmailService {
     const accessToken = await this.getValidAccessToken(account._id.toString());
 
     return this.gmailClient.getProfile(accessToken);
+  }
+
+  async syncMessages(userId: string) {
+    const account = await this.gmailRepository.findByUserIdWithTokens(userId);
+
+    if (!account) throw GmailAccountNotFoundError();
+
+    const accountId = account._id.toString();
+    const accessToken = await this.getValidAccessToken(accountId);
+
+    const response = await this.gmailClient.listMessages(accessToken);
+
+    const messageIds = (response.messages ?? [])
+      .map((message) => message.id)
+      .filter((id): id is string => Boolean(id));
+
+    if (!messageIds.length) return;
+
+    const messages = await this.gmailClient.getMessages(accessToken, messageIds);
+
+    const parsedMessages = messages.map((message) => ({
+      ...this.gmailParser.parse(message),
+      userId: account.userId,
+      connectedAccountId: account._id,
+    }));
+
+    await this.emailService.saveMany(parsedMessages);
+  }
+
+  async enqueueSync(userId: string): Promise<void> {
+    await this.emailSyncQueue.add('initial-sync', { userId });
   }
 }

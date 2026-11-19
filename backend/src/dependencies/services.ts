@@ -8,12 +8,16 @@ import { GmailService } from '@/modules/integrations/gmail/gmail.service.js';
 import { UserService } from '@/modules/users/user.service.js';
 import { gmailClient } from './clients.js';
 import { emailRepository, gmailRepository, userRepository } from './repositories.js';
+import { gmailParser } from './parsers.js';
+import { emailSyncQueue } from '@/infrastructure/queue/queues/email-sync.queue.js';
 
 export const userService = new UserService(userRepository);
 
 export const authService = new AuthService(userService);
 
 export const tokenEncryptionService = new TokenEncryptionService();
+
+export const emailService = new EmailService(emailRepository);
 
 export const gmailOauthStateService = new GmailOauthStateService();
 export const gmailOauthService = new GmailOauthService(googleOauth2Client);
@@ -23,6 +27,9 @@ export const gmailService = new GmailService(
   gmailRepository,
   tokenEncryptionService,
   gmailClient,
-);
 
-export const emailService = new EmailService(emailRepository);
+  gmailParser,
+  emailService,
+
+  emailSyncQueue,
+);

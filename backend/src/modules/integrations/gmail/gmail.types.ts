@@ -27,3 +27,12 @@ export interface IParsedGmailMessage {
   htmlBody: string | null;
   snippet: string | null;
 }
+
+export interface GmailSyncJobData {
+  userId: string;
+}
+
+export interface GmailSyncJobResult {
+  success: boolean;
+  userId: string;
+}
