@@ -15,4 +15,8 @@ export class EmailService {
   async getByThreadId(userId: string, threadId: string): Promise<IEmail[]> {
     return this.emailRepository.findByThreadId(userId, threadId);
   }
+
+  async deleteByConnectedAccountId(connectedAccountId: string): Promise<void> {
+    await this.emailRepository.deleteByConnectedAccountId(connectedAccountId);
+  }
 }

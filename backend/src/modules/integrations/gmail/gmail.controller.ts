@@ -47,7 +47,20 @@ export class GmailController {
     };
   }
 
-  async disconnect(): Promise<TApiResponse> {}
+  async disconnect(req: Request): Promise<TApiResponse> {
+    const userId = req.user?._id.toString();
+
+    if (!userId) throw UnauthorizedUserError();
+
+    await this.gmailService.disconnectAccount(userId);
+
+    return {
+      data: null,
+      message: 'Gmail account disconnected successfully.',
+      statusCode: 200,
+      success: true,
+    };
+  }
 
   async getProfile(req: Request): Promise<TApiResponse> {
     if (!req.user?._id) throw UnauthorizedUserError();

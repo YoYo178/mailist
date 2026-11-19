@@ -54,4 +54,10 @@ export class GmailOauthService {
 
     return credentials;
   }
+
+  async revokeToken(token: string): Promise<void> {
+    const oauthClient = createGoogleOauth2Client();
+
+    await oauthClient.revokeToken(token);
+  }
 }

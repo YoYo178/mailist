@@ -32,4 +32,10 @@ export class EmailRepository {
       threadId,
     }).sort({ date: 1 });
   }
+
+  async deleteByConnectedAccountId(connectedAccountId: string) {
+    return Email.deleteMany({
+      connectedAccountId,
+    });
+  }
 }

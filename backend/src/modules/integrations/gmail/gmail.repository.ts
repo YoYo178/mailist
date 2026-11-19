@@ -72,4 +72,11 @@ export class GmailRepository {
       { runValidators: true },
     );
   }
+
+  async deleteByUserId(userId: string) {
+    return ConnectedAccount.findOneAndDelete({
+      userId,
+      provider: 'google',
+    });
+  }
 }

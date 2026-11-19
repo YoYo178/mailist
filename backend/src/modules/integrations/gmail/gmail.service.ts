@@ -165,4 +165,25 @@ export class GmailService {
   async enqueueSync(userId: string): Promise<void> {
     await this.emailSyncQueue.add('initial-sync', { userId });
   }
+
+  async disconnectAccount(userId: string): Promise<void> {
+    const account = await this.gmailRepository.findByUserIdWithTokens(userId);
+
+    if (!account) throw GmailAccountNotFoundError();
+
+    const accountId = account._id.toString();
+
+    const encryptedToken = account.refreshToken ?? account.accessToken;
+
+    try {
+      const token = this.tokenEncryptionService.decrypt(encryptedToken);
+      await this.gmailOAuthService.revokeToken(token);
+    } catch (error) {
+      console.log('[Gmail] Failed to revoke Google authorization:', error);
+    }
+
+    await this.gmailRepository.deleteByUserId(userId);
+
+    await this.emailService.deleteByConnectedAccountId(accountId);
+  }
 }
