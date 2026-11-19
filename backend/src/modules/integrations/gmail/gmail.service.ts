@@ -122,8 +122,6 @@ export class GmailService {
 
     const accessToken = await this.getValidAccessToken(account._id.toString());
 
-    await this.gmailClient.listMessages(accessToken);
-
     return this.gmailClient.getProfile(accessToken);
   }
 }
