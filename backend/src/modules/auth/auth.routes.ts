@@ -5,8 +5,8 @@ import { Router } from 'express';
 
 const router: Router = Router();
 
-router.post('/login', routeWrapper(authController.login));
 router.post('/register', routeWrapper(authController.register));
+router.post('/login', routeWrapper(authController.login));
 
 router.post('/logout', authMiddleware.authenticate, routeWrapper(authController.logout));
 router.get('/me', authMiddleware.authenticate, routeWrapper(authController.getMe));
