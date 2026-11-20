@@ -1,5 +1,6 @@
 import env from '@/env.js';
 import type { TApiResponse } from '@/lib/api.lib.js';
+import { HttpStatus } from '@/lib/http.lib.js';
 import type { Request, Response } from 'express';
 import { UserSerializer } from '../users/user.serializer.js';
 import { UnauthorizedUserError } from './auth.errors.js';
@@ -26,7 +27,7 @@ export class AuthController {
     return {
       data: UserSerializer.serialize(user),
       message: 'User created successfully',
-      statusCode: 201, // Created
+      statusCode: HttpStatus.CREATED,
       success: true,
     };
   }
@@ -48,7 +49,7 @@ export class AuthController {
     return {
       data: UserSerializer.serialize(user),
       message: 'Logged in successfully',
-      statusCode: 200, // OK
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }
@@ -69,7 +70,7 @@ export class AuthController {
     });
 
     return {
-      statusCode: 204,
+      statusCode: HttpStatus.NO_CONTENT,
     };
   }
 
@@ -79,7 +80,7 @@ export class AuthController {
     return {
       data: UserSerializer.serialize(req.user),
       message: 'Fetched data succesfully',
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }

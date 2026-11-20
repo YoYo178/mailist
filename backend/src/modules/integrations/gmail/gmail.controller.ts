@@ -1,4 +1,5 @@
 import type { TApiResponse } from '@/lib/api.lib.js';
+import { HttpStatus } from '@/lib/http.lib.js';
 import { UnauthorizedUserError } from '@/modules/auth/auth.errors.js';
 import type { Request } from 'express';
 import { GoogleAuthDeniedError } from './gmail.errors.js';
@@ -27,7 +28,7 @@ export class GmailController {
     );
 
     return {
-      statusCode: 302,
+      statusCode: HttpStatus.FOUND,
       targetUrl,
     };
   }
@@ -43,7 +44,7 @@ export class GmailController {
     return {
       data: null,
       message: 'Google account connected successfully',
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }
@@ -58,7 +59,7 @@ export class GmailController {
     return {
       data: null,
       message: 'Gmail account disconnected successfully.',
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }
@@ -75,7 +76,7 @@ export class GmailController {
         totalThreads: profile.threadsTotal,
       },
       message: 'Fetched Gmail profile successfully',
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }
@@ -88,7 +89,7 @@ export class GmailController {
     return {
       data: status,
       message: 'Fetched Gmail connection status successfully',
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       success: true,
     };
   }

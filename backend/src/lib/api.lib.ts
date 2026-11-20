@@ -1,6 +1,13 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import { HttpStatus } from './http.lib.js';
 
-const REDIRECT_STATUS_CODES = [301, 302, 303, 307, 308] as const;
+const REDIRECT_STATUS_CODES = [
+  HttpStatus.MOVED_PERMANENTLY, // 301
+  HttpStatus.FOUND, // 302
+  HttpStatus.SEE_OTHER, // 303
+  HttpStatus.TEMPORARY_REDIRECT, // 307
+  HttpStatus.PERMANENT_REDIRECT, // 308
+] as const;
 
 // API Error
 interface IApiErrorParams<T> {
@@ -44,10 +51,10 @@ function isRedirectResponse(result: TApiResponse): result is IApiRedirectReponse
 }
 
 interface IApiNoContentResponse {
-  statusCode: 204;
+  statusCode: typeof HttpStatus.NO_CONTENT;
 }
 function isNoContentResponse(result: TApiResponse): result is IApiNoContentResponse {
-  return result.statusCode === 204;
+  return result.statusCode === HttpStatus.NO_CONTENT;
 }
 
 interface IApiSuccessResponse<T> {
