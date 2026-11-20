@@ -52,10 +52,10 @@ export class GmailParser {
         contentId: getPartHeader('content-id'),
         disposition: getPartHeader('content-disposition'),
       });
+    }
 
-      for (const child of part.parts ?? []) {
-        this.extractAttachments(child, attachments);
-      }
+    for (const child of part.parts ?? []) {
+      this.extractAttachments(child, attachments);
     }
   }
 
