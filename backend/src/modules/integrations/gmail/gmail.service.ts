@@ -159,7 +159,14 @@ export class GmailService {
       connectedAccountId: account._id,
     }));
 
+    // Don't save if the account was disconnected during synchronization
+    if (!(await this.gmailRepository.existsById(accountId))) return;
+
     await this.emailService.saveMany(parsedMessages);
+
+    // Cleanup if the disconnection happened while the save was in progress
+    if (!(await this.gmailRepository.existsById(accountId)))
+      await this.emailService.deleteByConnectedAccountId(accountId);
   }
 
   async enqueueSync(userId: string): Promise<void> {
@@ -167,6 +174,12 @@ export class GmailService {
   }
 
   async disconnectAccount(userId: string): Promise<void> {
+    try {
+      await this.removePendingSyncJobs(userId);
+    } catch (error) {
+      console.error('[Gmail] Failed to inspect pending sync jobs:', error);
+    }
+
     const account = await this.gmailRepository.findByUserIdWithTokens(userId);
 
     if (!account) throw GmailAccountNotFoundError();
@@ -182,8 +195,22 @@ export class GmailService {
       console.log('[Gmail] Failed to revoke Google authorization:', error);
     }
 
-    await this.gmailRepository.deleteByUserId(userId);
-
     await this.emailService.deleteByConnectedAccountId(accountId);
+
+    await this.gmailRepository.deleteByUserId(userId);
+  }
+
+  async removePendingSyncJobs(userId: string): Promise<void> {
+    const jobs = await this.emailSyncQueue.getJobs(['waiting', 'delayed', 'prioritized']);
+
+    const userJobs = jobs.filter((job) => job.data.userId === userId);
+
+    const results = await Promise.allSettled(userJobs.map((job) => job.remove()));
+
+    for (const result of results) {
+      if (result.status === 'rejected') {
+        console.error('[Gmail] Failed to remove a pending sync job');
+      }
+    }
   }
 }

@@ -79,4 +79,8 @@ export class GmailRepository {
       provider: 'google',
     });
   }
+
+  async existsById(id: string): Promise<boolean> {
+    return Boolean(await ConnectedAccount.exists({ _id: id }));
+  }
 }
