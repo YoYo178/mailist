@@ -1,6 +1,27 @@
 import type { gmail_v1 } from 'googleapis';
 import type { IParsedGmailAttachment, IParsedGmailMessage } from './gmail.types.js';
 
+function cleanText(text: string | null | undefined): string | null {
+  if (!text) return null;
+
+  const cleaned = text
+    // 1. Remove invisible format & joiner characters used in email preview hacks
+    // - \u034F: Combining Grapheme Joiner (CGJ)
+    // - \u200B-\u200F: Zero-width space, non-joiner, joiner, LTR/RTL marks
+    // - \u202A-\u202E, \u2060-\u2069: Directional formatting, Word Joiner, invisible operators
+    // - \uFEFF: Zero-width no-break space (BOM)
+    // - \u00AD: Soft hyphen
+    // - \u180E: Mongolian vowel separator
+    // - \u2800: Braille Pattern Blank (commonly used as a visual spacer)
+    .replace(/[\u034F\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF\u00AD\u180E\u2800]/g, '')
+    // 2. Collapse consecutive whitespace (including &nbsp; \u00A0 and en/em spaces) into a single space
+    .replace(/[\s\u00A0\u2000-\u200A\u202F\u205F\u3000]+/g, ' ')
+    // 3. Trim leading and trailing spaces LAST
+    .trim();
+
+  return cleaned || null;
+}
+
 export class GmailParser {
   private decodeBody(data: string | null): string | null {
     if (!data) return null;
@@ -81,8 +102,8 @@ export class GmailParser {
 
     return {
       attachments,
-      messageId: message.id ?? '',
-      threadId: message.threadId ?? '',
+      messageId: message.id,
+      threadId: message.threadId,
       labelIds: message.labelIds ?? [],
       from: getPartHeader('from'),
       to:
@@ -97,11 +118,11 @@ export class GmailParser {
         getPartHeader('bcc')
           ?.split(',')
           ?.map((v) => v.trim()) ?? [],
-      subject: getPartHeader('subject'),
+      subject: cleanText(getPartHeader('subject')),
       date,
       textBody: bodies.textBody,
       htmlBody: bodies.htmlBody,
-      snippet: message.snippet ?? null,
+      snippet: cleanText(message.snippet),
     };
   }
 }
