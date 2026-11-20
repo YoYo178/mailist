@@ -48,16 +48,28 @@ export class GmailClient {
 
   async getMessages(accessToken: string, messageIds: string[]): Promise<gmail_v1.Schema$Message[]> {
     const gmail = this.getClient(accessToken);
-    return Promise.all(
-      messageIds.map(async (id) => {
-        const { data } = await gmail.users.messages.get({
-          userId: 'me',
-          id,
-          format: 'full',
-        });
 
-        return data;
-      }),
-    );
+    const CONCURRENCY = 5;
+    const messages: gmail_v1.Schema$Message[] = [];
+
+    for (let i = 0; i < messageIds.length; i += CONCURRENCY) {
+      const batch = messageIds.slice(i, i + CONCURRENCY);
+
+      const batchMessages = await Promise.all(
+        batch.map(async (id) => {
+          const { data } = await gmail.users.messages.get({
+            userId: 'me',
+            format: 'full',
+            id,
+          });
+
+          return data;
+        }),
+      );
+
+      messages.push(...batchMessages);
+    }
+
+    return messages;
   }
 }
