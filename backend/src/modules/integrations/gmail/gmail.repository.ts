@@ -1,4 +1,8 @@
-import { ConnectedAccount, type TInputConnectedAccount } from './gmail.model.js';
+import {
+  ConnectedAccount,
+  type TGmailSyncStatus,
+  type TInputConnectedAccount,
+} from './gmail.model.js';
 
 export class GmailRepository {
   async create(data: TInputConnectedAccount) {
@@ -27,6 +31,11 @@ export class GmailRepository {
 
     const update = {
       $set,
+      $setOnInsert: {
+        syncStatus: 'pending',
+        lastSyncedAt: null,
+        syncError: null,
+      },
       ...(!data.expiresAt && {
         $unset: { expiresAt: 1 },
       }),
@@ -82,5 +91,30 @@ export class GmailRepository {
 
   async existsById(id: string): Promise<boolean> {
     return Boolean(await ConnectedAccount.exists({ _id: id }));
+  }
+
+  async updateSyncStatus(
+    id: string,
+    data: {
+      status: TGmailSyncStatus;
+      lastSyncedAt?: Date | null;
+      syncError?: string | null;
+    },
+  ) {
+    return ConnectedAccount.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          syncStatus: data.status,
+          ...(data.lastSyncedAt !== undefined && {
+            lastSyncedAt: data.lastSyncedAt,
+          }),
+          ...(data.syncError !== undefined && {
+            syncError: data.syncError,
+          }),
+        },
+      },
+      { runValidators: true },
+    );
   }
 }

@@ -141,32 +141,67 @@ export class GmailService {
     if (!account) throw GmailAccountNotFoundError();
 
     const accountId = account._id.toString();
-    const accessToken = await this.getValidAccessToken(accountId);
 
-    const response = await this.gmailClient.listMessages(accessToken);
+    const updatedAccount = await this.gmailRepository.updateSyncStatus(accountId, {
+      status: 'syncing',
+      syncError: null,
+    });
 
-    const messageIds = (response.messages ?? [])
-      .map((message) => message.id)
-      .filter((id): id is string => Boolean(id));
+    if (!updatedAccount) return;
 
-    if (!messageIds.length) return;
+    try {
+      const accessToken = await this.getValidAccessToken(accountId);
 
-    const messages = await this.gmailClient.getMessages(accessToken, messageIds);
+      const response = await this.gmailClient.listMessages(accessToken);
 
-    const parsedMessages = messages.map((message) => ({
-      ...this.gmailParser.parse(message),
-      userId: account.userId,
-      connectedAccountId: account._id,
-    }));
+      const messageIds = (response.messages ?? [])
+        .map((message) => message.id)
+        .filter((id): id is string => Boolean(id));
 
-    // Don't save if the account was disconnected during synchronization
-    if (!(await this.gmailRepository.existsById(accountId))) return;
+      if (messageIds.length) {
+        const messages = await this.gmailClient.getMessages(accessToken, messageIds);
 
-    await this.emailService.saveMany(parsedMessages);
+        const parsedMessages = messages.map((message) => ({
+          ...this.gmailParser.parse(message),
+          userId: account.userId,
+          connectedAccountId: account._id,
+        }));
 
-    // Cleanup if the disconnection happened while the save was in progress
-    if (!(await this.gmailRepository.existsById(accountId)))
-      await this.emailService.deleteByConnectedAccountId(accountId);
+        // Don't save if the account was disconnected during synchronization
+        if (!(await this.gmailRepository.existsById(accountId))) return;
+
+        await this.emailService.saveMany(parsedMessages);
+
+        // Cleanup if the disconnection happened while the save was in progress
+        if (!(await this.gmailRepository.existsById(accountId))) {
+          await this.emailService.deleteByConnectedAccountId(accountId);
+          return;
+        }
+      }
+
+      await this.gmailRepository.updateSyncStatus(accountId, {
+        status: 'completed',
+        lastSyncedAt: new Date(),
+        syncError: null,
+      });
+    } catch (error) {
+      try {
+        if (await this.gmailRepository.existsById(accountId)) {
+          const errorMessage =
+            error instanceof Error ? error.message.slice(0, 500) : 'Unknown synchronization error';
+
+          await this.gmailRepository.updateSyncStatus(accountId, {
+            status: 'failed',
+            syncError: errorMessage,
+          });
+        }
+      } catch (statusError) {
+        console.error('[Gmail] Failed to update sync failure status:', statusError);
+      }
+
+      // Throw error for BullMQ to handle
+      throw error;
+    }
   }
 
   async enqueueSync(userId: string): Promise<void> {
