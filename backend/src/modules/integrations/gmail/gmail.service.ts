@@ -14,7 +14,7 @@ import type { GmailOauthStateService } from './gmail.oauth-state.service.js';
 import type { GmailOauthService } from './gmail.oauth.service.js';
 import type { GmailParser } from './gmail.parser.js';
 import type { GmailRepository } from './gmail.repository.js';
-import type { GmailSyncJobData, GmailSyncJobResult } from './gmail.types.js';
+import type { GmailSyncJobData, GmailSyncJobResult, IAccountStatus } from './gmail.types.js';
 
 function isInvalidGrantError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false;
@@ -247,5 +247,27 @@ export class GmailService {
         console.error('[Gmail] Failed to remove a pending sync job');
       }
     }
+  }
+
+  async getStatus(userId: string): Promise<IAccountStatus> {
+    const account = await this.gmailRepository.findByUserId(userId);
+
+    if (!account) {
+      return {
+        connected: false,
+        email: null,
+        syncStatus: null,
+        lastSyncedAt: null,
+        syncError: null,
+      };
+    }
+
+    return {
+      connected: true,
+      email: account.email,
+      syncStatus: account.syncStatus,
+      lastSyncedAt: account.lastSyncedAt,
+      syncError: account.syncError,
+    };
   }
 }

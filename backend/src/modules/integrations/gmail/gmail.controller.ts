@@ -15,6 +15,7 @@ export class GmailController {
     this.callback = this.callback.bind(this);
     this.disconnect = this.disconnect.bind(this);
     this.getProfile = this.getProfile.bind(this);
+    this.getStatus = this.getStatus.bind(this);
   }
 
   async connect(req: Request): Promise<TApiResponse> {
@@ -74,6 +75,19 @@ export class GmailController {
         totalThreads: profile.threadsTotal,
       },
       message: 'Fetched Gmail profile successfully',
+      statusCode: 200,
+      success: true,
+    };
+  }
+
+  async getStatus(req: Request): Promise<TApiResponse> {
+    if (!req.user?._id) throw UnauthorizedUserError();
+
+    const status = await this.gmailService.getStatus(req.user._id.toString());
+
+    return {
+      data: status,
+      message: 'Fetched Gmail connection status successfully',
       statusCode: 200,
       success: true,
     };

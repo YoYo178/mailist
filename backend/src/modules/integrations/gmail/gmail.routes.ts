@@ -10,6 +10,7 @@ router.get('/callback', routeWrapper(gmailController.callback));
 router.use(authMiddleware.authenticate);
 
 router.get('/connect', routeWrapper(gmailController.connect));
+router.get('/status', routeWrapper(gmailController.getStatus));
 router.get('/profile', routeWrapper(gmailController.getProfile));
 router.delete('/', routeWrapper(gmailController.disconnect));
 

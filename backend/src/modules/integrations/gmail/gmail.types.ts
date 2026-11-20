@@ -1,3 +1,5 @@
+import type { IConnectedAccount } from './gmail.model.js';
+
 export interface IOauthState {
   userId: string;
   sessionId: string;
@@ -35,4 +37,12 @@ export interface GmailSyncJobData {
 export interface GmailSyncJobResult {
   success: boolean;
   userId: string;
+}
+
+export interface IAccountStatus {
+  connected: boolean;
+  email: IConnectedAccount['email'] | null;
+  syncStatus: IConnectedAccount['syncStatus'] | null;
+  lastSyncedAt: IConnectedAccount['lastSyncedAt'];
+  syncError: IConnectedAccount['syncError'];
 }
