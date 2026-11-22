@@ -19,6 +19,8 @@ const envSchema = z.object({
   GOOGLE_REDIRECT_URI: z.string().min(1),
 
   GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1),
+
+  GEMINI_API_KEY: z.string().min(1),
 });
 
 export default envSchema.parse(process.env);
