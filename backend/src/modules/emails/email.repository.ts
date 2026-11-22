@@ -38,4 +38,11 @@ export class EmailRepository {
       connectedAccountId,
     });
   }
+
+  async findByIdAndUserId(emailId: string, userId: string): Promise<IEmail | null> {
+    return Email.findOne({
+      _id: new mongoose.Types.ObjectId(emailId),
+      userId: new mongoose.Types.ObjectId(userId),
+    });
+  }
 }

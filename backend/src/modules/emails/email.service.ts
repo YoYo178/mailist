@@ -12,6 +12,10 @@ export class EmailService {
     return this.emailRepository.findByThreadId(userId, threadId);
   }
 
+  async getByIdAndUserId(emailId: string, userId: string): Promise<IEmail | null> {
+    return this.emailRepository.findByIdAndUserId(emailId, userId);
+  }
+
   async saveMany(emails: TInputEmail[]): Promise<void> {
     await this.emailRepository.upsertMany(emails);
   }
