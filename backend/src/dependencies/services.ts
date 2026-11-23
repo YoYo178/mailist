@@ -8,7 +8,7 @@ import { GmailOauthService } from '@/modules/integrations/gmail/gmail.oauth.serv
 import { GmailService } from '@/modules/integrations/gmail/gmail.service.js';
 import { TriageService } from '@/modules/triage/triage.service.js';
 import { UserService } from '@/modules/users/user.service.js';
-import { gmailClient } from './clients.js';
+import { gmailClient, llmClient } from './clients.js';
 import { gmailParser } from './parsers.js';
 import {
   emailRepository,
@@ -40,4 +40,4 @@ export const gmailService = new GmailService(
   emailSyncQueue,
 );
 
-export const triageService = new TriageService(triageRepository, emailService);
+export const triageService = new TriageService(triageRepository, emailService, llmClient);

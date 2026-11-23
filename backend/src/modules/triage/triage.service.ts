@@ -1,10 +1,15 @@
+import { TRIAGE_SYSTEM_PROMPT } from '@prompts/triage.prompts.js';
 import type { EmailService } from '../emails/email.service.js';
+import type { LLMClient } from '../llm/llm.client.js';
 import type { TriageRepository } from './triage.repository.js';
+import { triageOutputSchema } from './triage.schema.js';
 
 export class TriageService {
   constructor(
     private triageRepository: TriageRepository,
     private emailService: EmailService,
+
+    private llmClient: LLMClient,
   ) {}
 
   async processEmail(emailId: string, userId: string): Promise<void> {
@@ -19,7 +24,27 @@ export class TriageService {
     if (!triage) return;
 
     try {
-      // TODO: LLM part
+      const result = await this.llmClient.generate({
+        systemInstruction: TRIAGE_SYSTEM_PROMPT,
+        prompt: JSON.stringify({
+          from: email.from,
+          to: email.to,
+          subject: email.subject,
+          date: email.date,
+          body: email.textBody || email.snippet,
+        }),
+        responseSchema: triageOutputSchema,
+      });
+
+      const actionItems = result.actionItems.map((item) => ({
+        description: item.description,
+        deadline: item.deadline ? new Date(item.deadline) : null,
+      }));
+
+      await this.triageRepository.updateResult(emailId, {
+        ...result,
+        actionItems,
+      });
     } catch (error) {
       await this.triageRepository.updateStatus(
         emailId,
