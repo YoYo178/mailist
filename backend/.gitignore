@@ -4,5 +4,8 @@ build
 # ENV files inside secrets folder
 secrets/*.env
 
+# Prompts folder
+prompts
+
 # Include .env.example
 !secrets/.env.example

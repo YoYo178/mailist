@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",
+    // "rootDir": "./src",
     "outDir": "./build",
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
@@ -33,9 +33,10 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@prompts/*": ["./prompts/*"]
     }
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "./prompts/**/*.ts"],
   "exclude": ["node_modules", "oxfmt.config.ts", "oxlint.config.ts"]
 }
