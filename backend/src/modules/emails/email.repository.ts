@@ -16,8 +16,8 @@ export class EmailRepository {
     }).sort({ date: 1 });
   }
 
-  async upsertMany(emails: TInputEmail[]): Promise<void> {
-    if (!emails.length) return;
+  async upsertMany(emails: TInputEmail[]): Promise<IEmail[]> {
+    if (!emails.length) return [];
 
     await Email.bulkWrite(
       emails.map((email) => ({
@@ -31,6 +31,14 @@ export class EmailRepository {
         },
       })),
     );
+
+    const connectedAccountId = emails[0]?.connectedAccountId ?? '';
+    const messageIds = emails.map((email) => email.messageId);
+
+    return Email.find({
+      connectedAccountId,
+      messageId: { $in: messageIds },
+    }).exec();
   }
 
   async deleteByConnectedAccountId(connectedAccountId: string) {

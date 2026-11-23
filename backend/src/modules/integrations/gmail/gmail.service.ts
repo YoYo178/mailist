@@ -1,5 +1,6 @@
 import type { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
 import type { EmailService } from '@/modules/emails/email.service.js';
+import type { EmailTriageJobData, EmailTriageJobResult } from '@/modules/triage/triage.types.js';
 import type { Queue } from 'bullmq';
 import mongoose from 'mongoose';
 import type { GmailClient } from './gmail.client.js';
@@ -41,6 +42,7 @@ export class GmailService {
     private emailService: EmailService,
 
     private emailSyncQueue: Queue<GmailSyncJobData, GmailSyncJobResult>,
+    private emailTriageQueue: Queue<EmailTriageJobData, EmailTriageJobResult>,
   ) {}
 
   async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
@@ -170,13 +172,26 @@ export class GmailService {
         // Don't save if the account was disconnected during synchronization
         if (!(await this.gmailRepository.existsById(accountId))) return;
 
-        await this.emailService.saveMany(parsedMessages);
+        const savedEmails = await this.emailService.saveMany(parsedMessages);
 
         // Cleanup if the disconnection happened while the save was in progress
         if (!(await this.gmailRepository.existsById(accountId))) {
           await this.emailService.deleteByConnectedAccountId(accountId);
           return;
         }
+
+        await this.emailTriageQueue.addBulk(
+          savedEmails.map((email) => ({
+            name: 'triage-email',
+            data: {
+              emailId: email._id.toString(),
+              userId,
+            },
+            opts: {
+              jobId: `triage-${email._id.toString()}`,
+            },
+          })),
+        );
       }
 
       await this.gmailRepository.updateSyncStatus(accountId, {

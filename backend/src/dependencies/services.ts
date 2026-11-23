@@ -1,5 +1,6 @@
 import { googleOauth2Client } from '@/infrastructure/google/oauth.client.js';
 import { emailSyncQueue } from '@/infrastructure/queue/queues/email-sync.queue.js';
+import { emailTriageQueue } from '@/infrastructure/queue/queues/email-triage.queue.js';
 import { TokenEncryptionService } from '@/infrastructure/security/token-encryption.service.js';
 import { AuthService } from '@/modules/auth/auth.service.js';
 import { EmailService } from '@/modules/emails/email.service.js';
@@ -38,6 +39,7 @@ export const gmailService = new GmailService(
   emailService,
 
   emailSyncQueue,
+  emailTriageQueue,
 );
 
 export const triageService = new TriageService(triageRepository, emailService, llmClient);

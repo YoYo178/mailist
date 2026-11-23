@@ -16,8 +16,8 @@ export class EmailService {
     return this.emailRepository.findByIdAndUserId(emailId, userId);
   }
 
-  async saveMany(emails: TInputEmail[]): Promise<void> {
-    await this.emailRepository.upsertMany(emails);
+  async saveMany(emails: TInputEmail[]): Promise<IEmail[]> {
+    return await this.emailRepository.upsertMany(emails);
   }
 
   async deleteByConnectedAccountId(connectedAccountId: string): Promise<void> {
