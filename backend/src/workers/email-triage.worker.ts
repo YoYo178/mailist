@@ -1,3 +1,4 @@
+import { triageService } from '@/dependencies/services.js';
 import env from '@/env.js';
 import type { EmailTriageJobData, EmailTriageJobResult } from '@/modules/triage/triage.types.js';
 import { Worker } from 'bullmq';
@@ -10,16 +11,11 @@ const connection = new Redis(env.REDIS_URL, {
 export const emailTriageWorker = new Worker<EmailTriageJobData, EmailTriageJobResult>(
   'email-triage',
   async (job) => {
-    console.log(`Processing job ${job.id}`);
+    console.log(`Processing triage job ${job.id}`);
 
     const { emailId, userId } = job.data;
 
-    // TODOs:
-    // - Fetch email from MongoDB
-    // - Run AI Triage
-    // - Store Triage result
-
-    console.log({ emailId, userId });
+    await triageService.processEmail(emailId, userId);
 
     return {
       success: true,
@@ -28,18 +24,18 @@ export const emailTriageWorker = new Worker<EmailTriageJobData, EmailTriageJobRe
   },
   {
     connection,
-    concurrency: 5,
+    concurrency: 1,
   },
 );
 
 emailTriageWorker.on('completed', (job, result) => {
-  console.log(`Job ${job.id} completed`, result);
+  console.log(`Triage job ${job.id} completed`, result);
 });
 
 emailTriageWorker.on('failed', (job, error) => {
-  console.log(`Job ${job?.id} failed`, error);
+  console.error(`Triage job ${job?.id} failed:`, error);
 });
 
 emailTriageWorker.on('error', (error) => {
-  console.log('Worker error:', error);
+  console.error('Triage worker error:', error);
 });
