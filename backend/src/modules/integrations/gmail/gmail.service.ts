@@ -151,45 +151,54 @@ export class GmailService {
     try {
       const accessToken = await this.getValidAccessToken(accountId);
 
-      const response = await this.gmailClient.listMessages(accessToken);
+      let pageToken: string | undefined;
 
-      const messageIds = (response.messages ?? [])
-        .map((message) => message.id)
-        .filter((id): id is string => Boolean(id));
+      do {
+        const response = await this.gmailClient.listMessages(accessToken, {
+          maxResults: 100,
+          ...(pageToken && { pageToken })
+        });
 
-      if (messageIds.length) {
-        const messages = await this.gmailClient.getMessages(accessToken, messageIds);
+        const messageIds = (response.messages ?? [])
+          .map((message) => message.id)
+          .filter((id): id is string => Boolean(id))
 
-        const parsedMessages = messages.map((message) => ({
-          ...this.gmailParser.parse(message),
-          userId: account.userId,
-          connectedAccountId: account._id,
-        }));
+        if (messageIds.length) {
+          const messages = await this.gmailClient.getMessages(accessToken, messageIds);
 
-        // Don't save if the account was disconnected during synchronization
-        if (!(await this.gmailRepository.existsById(accountId))) return;
+          const parsedMessages = messages.map((message) => ({
+            ...this.gmailParser.parse(message),
+            userId: account.userId,
+            connectedAccountId: account._id,
+          }));
 
-        const savedEmails = await this.emailService.saveMany(parsedMessages);
+          // Don't save if the account was disconnected during synchronization
+          if (!(await this.gmailRepository.existsById(accountId))) return;
 
-        // Cleanup if the disconnection happened while the save was in progress
-        if (!(await this.gmailRepository.existsById(accountId))) {
-          await this.emailService.deleteByConnectedAccountId(accountId);
-          return;
+          const savedEmails = await this.emailService.saveMany(parsedMessages);
+
+          // Cleanup if the disconnection happened while the save was in progress
+          if (!(await this.gmailRepository.existsById(accountId))) {
+            await this.emailService.deleteByConnectedAccountId(accountId);
+            return;
+          }
+
+          await this.emailTriageQueue.addBulk(
+            savedEmails.map((email) => ({
+              name: 'triage-email',
+              data: {
+                emailId: email._id.toString(),
+                userId,
+              },
+              opts: {
+                jobId: `triage-${email._id.toString()}`,
+              },
+            })),
+          );
         }
 
-        await this.emailTriageQueue.addBulk(
-          savedEmails.map((email) => ({
-            name: 'triage-email',
-            data: {
-              emailId: email._id.toString(),
-              userId,
-            },
-            opts: {
-              jobId: `triage-${email._id.toString()}`,
-            },
-          })),
-        );
-      }
+        pageToken = response.nextPageToken ?? undefined;
+      } while (pageToken)
 
       await this.gmailRepository.updateSyncStatus(accountId, {
         status: 'completed',
