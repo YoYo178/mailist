@@ -1,7 +1,23 @@
 import mongoose from 'mongoose';
 import { Triage } from '../triage/triage.model.js';
 import { Email, type IEmail, type TInputEmail } from './email.model.js';
-import type { IEmailListFilters, IEmailListResult } from './email.types.js';
+import type { IEmailListFilters, IEmailListResult, IEmailWithTriage } from './email.types.js';
+
+const TRIAGE_LOOKUP_OBJ = {
+  $lookup: {
+    from: Triage.collection.name,
+    localField: '_id',
+    foreignField: 'emailId',
+    as: 'triage',
+  },
+}
+
+const TRIAGE_UNWIND_OBJ = {
+  $unwind: {
+    path: '$triage',
+    preserveNullAndEmptyArrays: true,
+  },
+}
 
 export class EmailRepository {
   async findByUserId(userId: string, page: number = 1, limit: number = 20): Promise<IEmail[]> {
@@ -62,7 +78,7 @@ export class EmailRepository {
     limit: number = 20,
     filters: IEmailListFilters = {},
   ): Promise<IEmailListResult> {
-    const match: Record<string, unknown> = {
+    const $match: Record<string, unknown> = {
       userId: new mongoose.Types.ObjectId(userId),
     };
 
@@ -72,23 +88,9 @@ export class EmailRepository {
     if (filters.category) triageFilters['triage.category'] = filters.category;
 
     const [result] = await Email.aggregate([
-      {
-        $match: match,
-      },
-      {
-        $lookup: {
-          from: Triage.collection.name,
-          localField: '_id',
-          foreignField: 'emailId',
-          as: 'triage',
-        },
-      },
-      {
-        $unwind: {
-          path: '$triage',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      { $match },
+      { ...TRIAGE_LOOKUP_OBJ },
+      { ...TRIAGE_UNWIND_OBJ },
       ...(Object.keys(triageFilters).length ? [{ $match: triageFilters }] : []),
       {
         $facet: {
@@ -113,5 +115,22 @@ export class EmailRepository {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async findDetailsByIdAndUserId(emailId: string, userId: string): Promise<IEmailWithTriage | null> {
+
+    const $match = {
+      _id: new mongoose.Types.ObjectId(emailId),
+      userId: new mongoose.Types.ObjectId(userId)
+    }
+
+    const [email] = await Email.aggregate([
+      { $match },
+      { ...TRIAGE_LOOKUP_OBJ },
+      { ...TRIAGE_UNWIND_OBJ },
+      { $limit: 1 }
+    ])
+
+    return email ?? null;
   }
 }

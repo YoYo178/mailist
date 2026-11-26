@@ -12,3 +12,9 @@ export const emailListQuerySchema = z.object({
 });
 
 export type TEmailListQuery = z.infer<typeof emailListQuerySchema>;
+
+export const emailIdParamsSchema = z.object({
+  emailId: z.string().regex(/^[a-f\d]{24}$/i, 'Invalid email ID'),
+})
+
+export type TEmailIdParams = z.infer<typeof emailIdParamsSchema>

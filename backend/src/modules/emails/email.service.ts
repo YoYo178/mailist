@@ -1,9 +1,9 @@
 import type { IEmail, TInputEmail } from './email.model.js';
 import type { EmailRepository } from './email.repository.js';
-import type { IEmailListFilters, IEmailListResult } from './email.types.js';
+import type { IEmailListFilters, IEmailListResult, IEmailWithTriage } from './email.types.js';
 
 export class EmailService {
-  constructor(private emailRepository: EmailRepository) {}
+  constructor(private emailRepository: EmailRepository) { }
 
   async getByUserId(userId: string, page: number = 1, limit: number = 20): Promise<IEmail[]> {
     return this.emailRepository.findByUserId(userId, page, limit);
@@ -32,5 +32,9 @@ export class EmailService {
     filters: IEmailListFilters = {},
   ): Promise<IEmailListResult> {
     return this.emailRepository.findInbox(userId, page, limit, filters);
+  }
+
+  async getDetailsByIdAndUserId(emailId: string, userId: string): Promise<IEmailWithTriage | null> {
+    return this.emailRepository.findDetailsByIdAndUserId(emailId, userId)
   }
 }
