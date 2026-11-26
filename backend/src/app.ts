@@ -4,10 +4,13 @@ import authRouter from '@/modules/auth/auth.routes.js';
 import integrationsRouter from '@/modules/integrations/integration.routes.js';
 import { sessionMiddleware } from './infrastructure/session/index.js';
 import errorHandler from './middlewares/errorHandler.middleware.js';
+import emailRouter from './modules/emails/email.routes.js';
 
 // API Router
 const apiRouter = Router();
+
 apiRouter.use('/auth', authRouter);
+apiRouter.use('/emails', emailRouter);
 apiRouter.use('/integrations', integrationsRouter);
 
 // Express application
