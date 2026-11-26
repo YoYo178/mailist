@@ -11,6 +11,7 @@ import {
   InvalidGoogleAccountError,
   InvalidOrExpiredState,
 } from './gmail.errors.js';
+import type { IConnectedAccount } from './gmail.model.js';
 import type { GmailOauthStateService } from './gmail.oauth-state.service.js';
 import type { GmailOauthService } from './gmail.oauth.service.js';
 import type { GmailParser } from './gmail.parser.js';
@@ -43,7 +44,7 @@ export class GmailService {
 
     private emailSyncQueue: Queue<GmailSyncJobData, GmailSyncJobResult>,
     private emailTriageQueue: Queue<EmailTriageJobData, EmailTriageJobResult>,
-  ) {}
+  ) { }
 
   async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
     const state = await this.gmailOauthStateService.create(userId, sessionId);
@@ -80,11 +81,7 @@ export class GmailService {
     await this.enqueueSync(oauthState.userId);
   }
 
-  async refreshAccessToken(accountId: string): Promise<string> {
-    const account = await this.gmailRepository.findByIdWithTokens(accountId);
-
-    if (!account) throw GmailAccountNotFoundError();
-
+  async refreshAccessToken(account: IConnectedAccount): Promise<string> {
     if (!account.refreshToken) throw GmailReauthorizationRequiredError();
 
     const refreshToken = this.tokenEncryptionService.decrypt(account.refreshToken);
@@ -103,7 +100,7 @@ export class GmailService {
 
     const accessToken = this.tokenEncryptionService.encrypt(tokens.access_token);
 
-    await this.gmailRepository.updateTokens(accountId, {
+    await this.gmailRepository.updateTokens(account._id.toString(), {
       accessToken,
       ...(tokens.expiry_date && {
         expiresAt: new Date(tokens.expiry_date),
@@ -124,7 +121,7 @@ export class GmailService {
       return this.tokenEncryptionService.decrypt(account.accessToken);
     }
 
-    return this.refreshAccessToken(accountId); // TODO: look into the 2nd re-fetch of the same account
+    return this.refreshAccessToken(account);
   }
 
   async getProfile(userId: string) {
