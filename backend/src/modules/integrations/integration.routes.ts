@@ -5,7 +5,8 @@ import gmailRouter from './gmail/gmail.routes.js';
 
 const router: Router = Router();
 
-router.use('/', routeWrapper(integrationController.listIntegrations));
 router.use('/gmail', gmailRouter);
+
+router.use('/', routeWrapper(integrationController.listIntegrations));
 
 export default router;
