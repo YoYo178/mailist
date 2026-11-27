@@ -2,16 +2,7 @@ import type { TInputUser } from './user.model.js';
 import type { UserRepository } from './user.repository.js';
 
 export class UserService {
-  constructor(private userRepository: UserRepository) {
-    this.bindMethods();
-  }
-
-  private bindMethods() {
-    this.createUser = this.createUser.bind(this);
-    this.getUserById = this.getUserById.bind(this);
-    this.getUserByEmail = this.getUserByEmail.bind(this);
-    this.getUserByEmailWithPassword = this.getUserByEmailWithPassword.bind(this);
-  }
+  constructor(private userRepository: UserRepository) {}
 
   async createUser(data: TInputUser) {
     return await this.userRepository.create(data);

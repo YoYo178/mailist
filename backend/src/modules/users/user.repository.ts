@@ -1,20 +1,6 @@
 import { User, type IUser, type TInputUser } from './user.model.js';
 
 export class UserRepository {
-  constructor() {
-    this.bindMethods();
-  }
-
-  private bindMethods() {
-    this.findAll = this.findAll.bind(this);
-    this.findById = this.findById.bind(this);
-    this.findByEmail = this.findByEmail.bind(this);
-    this.findByEmailWithPassword = this.findByEmailWithPassword.bind(this);
-    this.create = this.create.bind(this);
-    this.update = this.update.bind(this);
-    this.deleteOne = this.deleteOne.bind(this);
-  }
-
   async findAll(): Promise<IUser[]> {
     return User.find().lean().exec();
   }

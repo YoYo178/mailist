@@ -6,14 +6,7 @@ import { InvalidLoginError, UserExistsError } from './auth.errors.js';
 import type { TLoginData, TRegisterData } from './auth.schema.js';
 
 export class AuthService {
-  constructor(private userService: UserService) {
-    this.bindMethods();
-  }
-
-  private bindMethods() {
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleRegister = this.handleRegister.bind(this);
-  }
+  constructor(private userService: UserService) {}
 
   async handleLogin(data: TLoginData): Promise<IUser> {
     const { email, password } = data;
