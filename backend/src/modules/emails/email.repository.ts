@@ -10,14 +10,14 @@ const TRIAGE_LOOKUP_OBJ = {
     foreignField: 'emailId',
     as: 'triage',
   },
-}
+};
 
 const TRIAGE_UNWIND_OBJ = {
   $unwind: {
     path: '$triage',
     preserveNullAndEmptyArrays: true,
   },
-}
+};
 
 export class EmailRepository {
   async findByUserId(userId: string, page: number = 1, limit: number = 20): Promise<IEmail[]> {
@@ -117,19 +117,21 @@ export class EmailRepository {
     };
   }
 
-  async findDetailsByIdAndUserId(emailId: string, userId: string): Promise<IEmailWithTriage | null> {
-
+  async findDetailsByIdAndUserId(
+    emailId: string,
+    userId: string,
+  ): Promise<IEmailWithTriage | null> {
     const $match = {
       _id: new mongoose.Types.ObjectId(emailId),
-      userId: new mongoose.Types.ObjectId(userId)
-    }
+      userId: new mongoose.Types.ObjectId(userId),
+    };
 
     const [email] = await Email.aggregate([
       { $match },
       { ...TRIAGE_LOOKUP_OBJ },
       { ...TRIAGE_UNWIND_OBJ },
-      { $limit: 1 }
-    ])
+      { $limit: 1 },
+    ]);
 
     return email ?? null;
   }

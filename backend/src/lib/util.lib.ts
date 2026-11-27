@@ -1,7 +1,6 @@
 export type TLogLevel = 'info' | 'error' | 'warn' | 'debug';
 
 export function createLogger(...identifiers: string[]) {
-
   const header = '[' + identifiers.join(':') + ']';
 
   return function (level: TLogLevel, ...data: unknown[]) {
@@ -24,9 +23,8 @@ export function createLogger(...identifiers: string[]) {
         throw new Error('Unknown log level');
     }
 
-    if (!logFn)
-      throw new Error('Unknown log level');
+    if (!logFn) throw new Error('Unknown log level');
 
     logFn(header, ...data);
-  }
+  };
 }

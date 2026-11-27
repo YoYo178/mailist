@@ -44,7 +44,7 @@ export class GmailService {
 
     private emailSyncQueue: Queue<GmailSyncJobData, GmailSyncJobResult>,
     private emailTriageQueue: Queue<EmailTriageJobData, EmailTriageJobResult>,
-  ) { }
+  ) {}
 
   async getAuthorizationUrl(userId: string, sessionId: string): Promise<string> {
     const state = await this.gmailOauthStateService.create(userId, sessionId);
@@ -156,12 +156,12 @@ export class GmailService {
       do {
         const response = await this.gmailClient.listMessages(accessToken, {
           maxResults: 100,
-          ...(pageToken && { pageToken })
+          ...(pageToken && { pageToken }),
         });
 
         const messageIds = (response.messages ?? [])
           .map((message) => message.id)
-          .filter((id): id is string => Boolean(id))
+          .filter((id): id is string => Boolean(id));
 
         if (messageIds.length) {
           const messages = await this.gmailClient.getMessages(accessToken, messageIds);
@@ -198,7 +198,7 @@ export class GmailService {
         }
 
         pageToken = response.nextPageToken ?? undefined;
-      } while (pageToken)
+      } while (pageToken);
 
       await this.gmailRepository.updateSyncStatus(accountId, {
         status: 'completed',

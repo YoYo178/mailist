@@ -14,7 +14,7 @@ const connection = new Redis(env.REDIS_URL, {
 export const emailTriageWorker = new Worker<EmailTriageJobData, EmailTriageJobResult>(
   'email-triage',
   async (job) => {
-    log('info', `<== Job ${job.id} start`)
+    log('info', `<== Job ${job.id} start`);
 
     const { emailId, userId } = job.data;
 
@@ -32,13 +32,13 @@ export const emailTriageWorker = new Worker<EmailTriageJobData, EmailTriageJobRe
 );
 
 emailTriageWorker.on('completed', (job, result) => {
-  log('info', `==> Job ${job.id} completed`, result)
+  log('info', `==> Job ${job.id} completed`, result);
 });
 
 emailTriageWorker.on('failed', (job, error) => {
-  log('error', `==> Job ${job?.id} failed`, error)
+  log('error', `==> Job ${job?.id} failed`, error);
 });
 
 emailTriageWorker.on('error', (error) => {
-  log('error', `==> Worker error`, error)
+  log('error', `==> Worker error`, error);
 });

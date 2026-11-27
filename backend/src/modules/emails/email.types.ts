@@ -1,5 +1,5 @@
-import type { ITriage, TTriageCategory, TTriagePriority } from "../triage/triage.types.js";
-import type { IEmail } from "./email.model.js";
+import type { ITriage, TTriageCategory, TTriagePriority } from '../triage/triage.types.js';
+import type { IEmail } from './email.model.js';
 
 export interface IEmailListFilters {
   priority?: TTriagePriority;
@@ -17,5 +17,5 @@ export interface IEmailListResult {
     limit: number;
     total: number;
     totalPages: number;
-  }
+  };
 }

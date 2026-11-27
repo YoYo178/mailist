@@ -40,13 +40,13 @@ export class EmailController {
 
     const email = await this.emailService.getDetailsByIdAndUserId(emailId, req.user._id.toString());
 
-    if (!email) throw EmailNotFoundError()
+    if (!email) throw EmailNotFoundError();
 
     return {
       success: true,
       statusCode: 200,
       message: 'Email retrieved successfully',
-      data: email
+      data: email,
     };
   }
 }

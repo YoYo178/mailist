@@ -17,7 +17,7 @@ const connection = new Redis(env.REDIS_URL, {
 export const emailSyncWorker = new Worker<GmailSyncJobData, GmailSyncJobResult>(
   'email-sync',
   async (job) => {
-    log('info', `<== Job ${job.id} start`)
+    log('info', `<== Job ${job.id} start`);
 
     const { userId } = job.data;
 
@@ -35,13 +35,13 @@ export const emailSyncWorker = new Worker<GmailSyncJobData, GmailSyncJobResult>(
 );
 
 emailSyncWorker.on('completed', (job, result) => {
-  log('info', `==> Job ${job.id} completed`, result)
+  log('info', `==> Job ${job.id} completed`, result);
 });
 
 emailSyncWorker.on('failed', (job, error) => {
-  log('error', `==> Job ${job?.id} failed`, error)
+  log('error', `==> Job ${job?.id} failed`, error);
 });
 
 emailSyncWorker.on('error', (error) => {
-  log('error', `==> Worker error`, error)
+  log('error', `==> Worker error`, error);
 });
