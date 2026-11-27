@@ -151,7 +151,7 @@ export class GmailService {
     try {
       const accessToken = await this.getValidAccessToken(accountId);
 
-      let pageToken: string | undefined;
+      let pageToken: string | null = account.syncPageToken ?? null;
 
       do {
         const response = await this.gmailClient.listMessages(accessToken, {
@@ -197,13 +197,25 @@ export class GmailService {
           );
         }
 
-        pageToken = response.nextPageToken ?? undefined;
+        const nextPageToken = response.nextPageToken ?? null;
+
+        if (nextPageToken) {
+          const checkpoint = await this.gmailRepository.updateSyncStatus(accountId, {
+            status: 'syncing',
+            syncPageToken: nextPageToken,
+          });
+
+          if (!checkpoint) return;
+        }
+
+        pageToken = nextPageToken ?? null;
       } while (pageToken);
 
       await this.gmailRepository.updateSyncStatus(accountId, {
         status: 'completed',
         lastSyncedAt: new Date(),
         syncError: null,
+        syncPageToken: null,
       });
     } catch (error) {
       try {

@@ -27,6 +27,7 @@ interface IConnectedAccount {
   syncStatus: TGmailSyncStatus;
   lastSyncedAt: Date | null;
   syncError: string | null;
+  syncPageToken: string | null;
 
   createdAt: Date;
   updatedAt: Date;
@@ -34,7 +35,7 @@ interface IConnectedAccount {
 
 export type TInputConnectedAccount = Omit<
   IConnectedAccount,
-  TMongoFields | 'syncStatus' | 'lastSyncedAt' | 'syncError'
+  TMongoFields | 'syncStatus' | 'lastSyncedAt' | 'syncError' | 'syncPageToken'
 >;
 
 const connectedAccountSchema = new mongoose.Schema<IConnectedAccount>(
@@ -56,6 +57,7 @@ const connectedAccountSchema = new mongoose.Schema<IConnectedAccount>(
     lastSyncedAt: { type: Date, default: null },
     syncError: { type: String, default: null },
     syncStatus: { type: String, enum: SYNC_STATES, default: 'pending' },
+    syncPageToken: { type: String, default: null },
   },
   { timestamps: true },
 );

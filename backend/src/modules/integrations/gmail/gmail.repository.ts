@@ -109,6 +109,7 @@ export class GmailRepository {
       status: TGmailSyncStatus;
       lastSyncedAt?: Date | null;
       syncError?: string | null;
+      syncPageToken?: string | null;
     },
   ) {
     return ConnectedAccount.findByIdAndUpdate(
@@ -121,6 +122,9 @@ export class GmailRepository {
           }),
           ...(data.syncError !== undefined && {
             syncError: data.syncError,
+          }),
+          ...(data.syncPageToken !== undefined && {
+            syncPageToken: data.syncPageToken,
           }),
         },
       },
