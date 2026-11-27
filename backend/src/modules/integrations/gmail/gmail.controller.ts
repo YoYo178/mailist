@@ -2,8 +2,7 @@ import type { TApiResponse } from '@/lib/api.lib.js';
 import { HttpStatus } from '@/lib/http.lib.js';
 import { UnauthorizedUserError } from '@/modules/auth/auth.errors.js';
 import type { Request } from 'express';
-import { GoogleAuthDeniedError } from './gmail.errors.js';
-import { callbackSuccessSchema } from './gmail.schema.js';
+import { callbackDeniedSchema, callbackSuccessSchema } from './gmail.schema.js';
 import type { GmailService } from './gmail.service.js';
 
 export class GmailController {
@@ -34,10 +33,13 @@ export class GmailController {
   }
 
   async callback(req: Request): Promise<TApiResponse> {
-    // TODO: Handle denial separately as it may not offer a code on a denied/rejected flow
-    const { code, state, error } = callbackSuccessSchema.parse(req.query);
+    if (typeof req.query['error'] === 'string') {
+      const { state } = callbackDeniedSchema.parse(req.query);
 
-    if (error) throw GoogleAuthDeniedError();
+      await this.gmailService.handleAuthorizationDenial(state, req.sessionID);
+    }
+
+    const { code, state } = callbackSuccessSchema.parse(req.query);
 
     await this.gmailService.connectAccount(code, state, req.sessionID);
 

@@ -7,6 +7,12 @@ export const callbackSuccessSchema = z.object({
   authuser: z.coerce.number(),
   prompt: z.enum(['consent']),
   iss: z.string().optional(),
-  error: z.string().optional(),
 });
+
+export const callbackDeniedSchema = z.object({
+  state: z.string().min(1),
+  error: z.string().min(1),
+});
+
 export type TCallbackSuccessData = z.infer<typeof callbackSuccessSchema>;
+export type TCallbackDeniedData = z.infer<typeof callbackDeniedSchema>;

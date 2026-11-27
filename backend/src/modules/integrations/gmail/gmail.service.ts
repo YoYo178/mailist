@@ -8,6 +8,7 @@ import {
   GmailAccountNotFoundError,
   GmailReauthorizationRequiredError,
   GmailTokenRefreshFailedError,
+  GoogleAuthDeniedError,
   InvalidGoogleAccountError,
   InvalidOrExpiredState,
 } from './gmail.errors.js';
@@ -50,6 +51,16 @@ export class GmailService {
     const state = await this.gmailOauthStateService.create(userId, sessionId);
 
     return this.gmailOAuthService.getAuthorizationUrl(state);
+  }
+
+  async handleAuthorizationDenial(state: string, sessionId: string): Promise<never> {
+    const oauthState = await this.gmailOauthStateService.consume(state);
+
+    if (!oauthState || oauthState.sessionId !== sessionId) {
+      throw InvalidOrExpiredState();
+    }
+
+    throw GoogleAuthDeniedError();
   }
 
   async connectAccount(code: string, state: string, sessionId: string) {
