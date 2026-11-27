@@ -1,5 +1,5 @@
-import type { TApiResponse } from "@/lib/api.lib.js";
-import { PROVIDERS } from "./gmail/gmail.model.js";
+import type { TApiResponse } from '@/lib/api.lib.js';
+import { PROVIDERS } from './gmail/gmail.model.js';
 
 export class IntegrationController {
   constructor() {
@@ -16,8 +16,8 @@ export class IntegrationController {
       statusCode: 200,
       message: 'Integrations fetched successfully',
       data: {
-        supportedIntegrations: PROVIDERS
-      }
-    }
+        supportedIntegrations: PROVIDERS,
+      },
+    };
   }
 }
