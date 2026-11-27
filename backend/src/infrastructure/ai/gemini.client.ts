@@ -1,5 +1,5 @@
 import type { ILLMGenerationRequest, ILLMProvider } from '@/modules/llm/llm.types.js';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 import z from 'zod';
 
 export class GeminiClient implements ILLMProvider {
@@ -27,6 +27,10 @@ export class GeminiClient implements ILLMProvider {
         systemInstruction: request.systemInstruction,
         responseMimeType: 'application/json',
         responseJsonSchema: z.toJSONSchema(request.responseSchema),
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.LOW,
+          includeThoughts: false,
+        },
       },
     });
 
