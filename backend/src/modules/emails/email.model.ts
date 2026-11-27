@@ -1,10 +1,12 @@
-import type { TMongoFields } from '@/types/mongodb.types.js';
+import type {
+  IBaseMongoDocumentWithTimestamp,
+  TMongoFieldsWithTimestamp,
+} from '@/types/mongodb.types.js';
 import type { Types } from 'mongoose';
 import { model, Schema } from 'mongoose';
 import type { IParsedGmailMessage } from '../integrations/gmail/gmail.types.js';
 
-interface IEmail {
-  _id: Types.ObjectId;
+interface IEmail extends IBaseMongoDocumentWithTimestamp {
   userId: Types.ObjectId;
   connectedAccountId: Types.ObjectId;
 
@@ -26,12 +28,9 @@ interface IEmail {
   snippet: string | null;
 
   attachments: IParsedGmailMessage['attachments'];
-
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-export type TInputEmail = Omit<IEmail, TMongoFields>;
+export type TInputEmail = Omit<IEmail, TMongoFieldsWithTimestamp>;
 
 const emailSchema = new Schema<IEmail>(
   {

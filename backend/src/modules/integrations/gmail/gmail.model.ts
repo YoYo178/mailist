@@ -1,4 +1,7 @@
-import type { TMongoFields } from '@/types/mongodb.types.js';
+import type {
+  IBaseMongoDocumentWithTimestamp,
+  TMongoFieldsWithTimestamp,
+} from '@/types/mongodb.types.js';
 import mongoose, { Types } from 'mongoose';
 
 const PROVIDERS = ['google'] as const;
@@ -7,9 +10,7 @@ type TProvider = (typeof PROVIDERS)[number];
 const SYNC_STATES = ['pending', 'syncing', 'completed', 'failed'] as const;
 type TGmailSyncStatus = (typeof SYNC_STATES)[number];
 
-interface IConnectedAccount {
-  _id: Types.ObjectId;
-
+interface IConnectedAccount extends IBaseMongoDocumentWithTimestamp {
   userId: Types.ObjectId;
 
   provider: (typeof PROVIDERS)[number];
@@ -28,14 +29,11 @@ interface IConnectedAccount {
   lastSyncedAt: Date | null;
   syncError: string | null;
   syncPageToken: string | null;
-
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export type TInputConnectedAccount = Omit<
   IConnectedAccount,
-  TMongoFields | 'syncStatus' | 'lastSyncedAt' | 'syncError' | 'syncPageToken'
+  TMongoFieldsWithTimestamp | 'syncStatus' | 'lastSyncedAt' | 'syncError' | 'syncPageToken'
 >;
 
 const connectedAccountSchema = new mongoose.Schema<IConnectedAccount>(

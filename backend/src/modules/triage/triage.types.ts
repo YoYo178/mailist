@@ -1,3 +1,4 @@
+import type { IBaseMongoDocumentWithTimestamp } from '@/types/mongodb.types.js';
 import type mongoose from 'mongoose';
 
 export interface EmailTriageJobData {
@@ -34,9 +35,7 @@ export interface ITriageActionItem {
   deadline: Date | null;
 }
 
-export interface ITriage {
-  _id: mongoose.Types.ObjectId;
-
+export interface ITriage extends IBaseMongoDocumentWithTimestamp {
   emailId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
 
@@ -52,7 +51,4 @@ export interface ITriage {
 
   processedAt: Date | null;
   error: string | null;
-
-  createdAt: Date;
-  updatedAt: Date;
 }

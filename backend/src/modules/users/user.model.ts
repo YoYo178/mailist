@@ -1,16 +1,16 @@
-import type { TMongoFields } from '@/types/mongodb.types.js';
-import mongoose, { Types } from 'mongoose';
+import type {
+  IBaseMongoDocumentWithTimestamp,
+  TMongoFieldsWithTimestamp,
+} from '@/types/mongodb.types.js';
+import mongoose from 'mongoose';
 
-interface IUser {
-  _id: Types.ObjectId;
+interface IUser extends IBaseMongoDocumentWithTimestamp {
   name: string;
   email: string;
   passwordHash: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-type TInputUser = Omit<IUser, TMongoFields>;
+type TInputUser = Omit<IUser, TMongoFieldsWithTimestamp>;
 
 const userSchema = new mongoose.Schema<IUser>(
   {
