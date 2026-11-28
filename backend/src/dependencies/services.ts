@@ -7,13 +7,15 @@ import { EmailService } from '@/modules/emails/email.service.js';
 import { GmailOauthStateService } from '@/modules/integrations/gmail/gmail.oauth-state.service.js';
 import { GmailOauthService } from '@/modules/integrations/gmail/gmail.oauth.service.js';
 import { GmailService } from '@/modules/integrations/gmail/gmail.service.js';
+import { LLMService } from '@/modules/llm/llm.service.js';
 import { TriageService } from '@/modules/triage/triage.service.js';
 import { UserService } from '@/modules/users/user.service.js';
-import { gmailClient, llmClient } from './clients.js';
+import { geminiClient, gmailClient } from './clients.js';
 import { gmailParser } from './parsers.js';
 import {
   emailRepository,
   gmailRepository,
+  llmRepository,
   triageRepository,
   userRepository,
 } from './repositories.js';
@@ -42,4 +44,6 @@ export const gmailService = new GmailService(
   emailTriageQueue,
 );
 
-export const triageService = new TriageService(triageRepository, emailService, llmClient);
+export const llmService = new LLMService(geminiClient, llmRepository);
+
+export const triageService = new TriageService(triageRepository, emailService, llmService);

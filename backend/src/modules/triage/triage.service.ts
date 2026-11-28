@@ -1,6 +1,6 @@
 import { TRIAGE_SYSTEM_PROMPT } from '@prompts/triage.prompts.js';
 import type { EmailService } from '../emails/email.service.js';
-import type { LLMClient } from '../llm/llm.client.js';
+import type { LLMService } from '../llm/llm.service.js';
 import type { TriageRepository } from './triage.repository.js';
 import { triageOutputSchema } from './triage.schema.js';
 
@@ -9,7 +9,7 @@ export class TriageService {
     private triageRepository: TriageRepository,
     private emailService: EmailService,
 
-    private llmClient: LLMClient,
+    private llmService: LLMService,
   ) {}
 
   async processEmail(emailId: string, userId: string): Promise<void> {
@@ -24,7 +24,7 @@ export class TriageService {
     if (!triage) return;
 
     try {
-      const result = await this.llmClient.generate({
+      const result = await this.llmService.generate({
         systemInstruction: TRIAGE_SYSTEM_PROMPT,
         prompt: JSON.stringify({
           from: email.from,

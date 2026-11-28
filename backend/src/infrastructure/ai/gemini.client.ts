@@ -31,6 +31,9 @@ export class GeminiClient implements ILLMProvider {
           thinkingLevel: ThinkingLevel.LOW,
           includeThoughts: false,
         },
+        ...(request?.signal && {
+          abortSignal: request.signal,
+        })
       },
     });
 
